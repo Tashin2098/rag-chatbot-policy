@@ -17,11 +17,10 @@
 - [Usage Guide](#-usage-guide)
 - [How It Works](#-how-it-works)
 - [API Documentation](#-api-documentation)
-- [Configuration](#-configuration)
 - [Project Structure](#-project-structure)
 - [Testing](#-testing)
 - [Troubleshooting](#-troubleshooting)
-- [License](#-license)
+
 
 ---
 

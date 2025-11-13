@@ -89,8 +89,8 @@ UI Display (Answer + Sources + Context)
 #### Step 1: Clone Repository
 
 ```bash
-git clone https://github.com/<your-username>/rag-policy-chatbot.git
-cd rag-policy-chatbot
+git clone https://github.com/Tashin2098/rag-chatbot-policy.git
+cd rag-chatbot-policy
 ```
 
 #### Step 2: Create Virtual Environment
@@ -126,7 +126,7 @@ GROQ_API_KEY=your_groq_api_key_here
 EOF
 ```
 
-**Get your API key:**
+**Get API key:**
 1. Visit https://console.groq.com
 2. Sign up (free tier available)
 3. Generate API key
@@ -145,7 +145,7 @@ Opens at: `http://localhost:8501`
 **Option B: FastAPI REST API**
 
 ```bash
-python api.py
+uvicorn api:app --reload --port 8000
 ```
 
 Swagger UI at: `http://localhost:8000/docs`
@@ -169,9 +169,9 @@ streamlit run app.py
 
 #### 3. Upload Policy Documents
 
-- Click **"📤 Upload files to this chat"** expander
+- Click **"Upload files to this chat"** expander
 - Select PDF/TXT files (supports multiple)
-- Click **"🚀 Process files"**
+- Click **"Process files"**
 - Wait for indexing notification
 
 #### 4. Ask Questions
@@ -383,53 +383,10 @@ Interactive API testing at: `http://localhost:8000/docs`
 
 ---
 
-## ⚙️ Configuration
-
-### Change Embedding Model
-
-Edit `src/vectorstore.py`:
-
-```python
-# Current (fast, small)
-self.embed_model = SentenceTransformer("all-MiniLM-L6-v2")
-
-# More accurate (slower, larger)
-self.embed_model = SentenceTransformer("all-mpnet-base-v2")
-```
-
-### Change LLM Model
-
-Edit `src/generation.py`:
-
-```python
-# Current
-self.model = "llama-3.3-70b-versatile"
-
-# Faster alternative
-self.model = "mixtral-8x7b-32768"
-```
-
-### Adjust Chunk Parameters
-
-Edit `src/ingestion.py`:
-
-```python
-chunk_size = 800      # Characters per chunk
-chunk_overlap = 100   # Overlap between chunks
-```
-
-### Tune Search Results
-
-```python
-top_k = 3  # Retrieve top 3 chunks (increase for more context)
-```
-
----
-
 ## 📁 Project Structure
 
 ```
-rag-policy-chatbot/
+rag-chatbot-policy/
 ├── src/
 │   ├── __init__.py              # Package initialization
 │   ├── ingestion.py             # Document processing & chunking
@@ -545,24 +502,7 @@ pip install faiss-gpu
 # Update code (auto-detected)
 ```
 
-### Persist Chat History
 
-Add to `app.py`:
-
-```python
-import json
-from pathlib import Path
-
-def save_chats():
-    with open("chats.json", "w") as f:
-        json.dump(st.session_state.chats, f)
-
-def load_chats():
-    if Path("chats.json").exists():
-        with open("chats.json") as f:
-            return json.load(f)
-    return []
-```
 
 ### Add User Authentication
 
@@ -577,30 +517,6 @@ async def generate(req: QueryRequest, credentials = Depends(security)):
     ...
 ```
 
----
-
-## 📚 Requirements
-
-```
-streamlit==1.28.0
-fastapi==0.104.0
-uvicorn==0.24.0
-pydantic==2.4.0
-python-dotenv==1.0.0
-groq==0.4.1
-faiss-cpu==1.7.4
-sentence-transformers==2.2.2
-pypdf==3.17.0
-```
-
-Generate from project:
-
-```bash
-pip freeze > requirements.txt
-```
-
----
-
 ## 🎓 Learning Resources
 
 - [RAG Concepts](https://docs.llamaindex.ai/en/stable/getting_started/concepts/)
@@ -612,57 +528,4 @@ pip freeze > requirements.txt
 
 ---
 
-## 📄 License
 
-MIT License - Free for personal and commercial use
-
----
-
-## 👤 Author
-
-**MD Tashin Rahman**
-- Full-Stack Healthcare AI Developer
-- RAG & LLM Specialist
-- GitHub: [@tashin-rahman](https://github.com)
-
----
-
-## 🤝 Contributing
-
-Contributions welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
-
-## 📞 Support & Issues
-
-- **Bug Report:** [GitHub Issues](https://github.com/issues)
-- **Feature Request:** [GitHub Discussions](https://github.com/discussions)
-- **Email:** tashin@example.com
-
----
-
-## 🙏 Acknowledgments
-
-Built with:
-- **Streamlit** — Beautiful UI framework
-- **FastAPI** — Modern REST API
-- **FAISS** — Vector search
-- **SentenceTransformers** — Semantic embeddings
-- **Groq** — Fast LLM inference
-
----
-
-## ⭐ Star History
-
-If this project helped you, please consider giving it a ⭐ on GitHub!
-
----
-
-**Last Updated:** November 13, 2025  
-**Status:** Production Ready ✅

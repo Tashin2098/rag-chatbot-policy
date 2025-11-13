@@ -24,7 +24,7 @@
 
 ---
 
-## ✨ Features
+## Features
 
 ✅ **Multi-Document Support** — Ingest multiple PDF/TXT policy files simultaneously  
 ✅ **ChatGPT-style UI** — Streamlit interface with sidebar chat history and per-chat memory  
@@ -38,7 +38,7 @@
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ### System Flow Diagram
 
@@ -75,7 +75,7 @@ UI Display (Answer + Sources + Context)
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -151,7 +151,7 @@ Swagger UI at: `http://localhost:8000/docs`
 
 ---
 
-## 📖 Usage Guide
+## Usage Guide
 
 ### Streamlit UI Tutorial
 
@@ -186,8 +186,8 @@ Type your question and press Enter:
 #### 5. View Results
 
 - **Answer** — Main response text
-- **📎 Sources** — Expand to see file names + chunk IDs + relevance scores
-- **🔍 Retrieved context** — Expand to see exact policy text used
+- **Sources** — Expand to see file names + chunk IDs + relevance scores
+- **Retrieved context** — Expand to see exact policy text used
 
 #### 6. Switch Chats
 
@@ -204,7 +204,7 @@ Select different chat from sidebar dropdown. Each maintains separate memory and 
 
 ---
 
-## 🔧 How It Works
+## How It Works
 
 ### Phase 1: Document Ingestion
 
@@ -231,9 +231,9 @@ Select different chat from sidebar dropdown. Each maintains separate memory and 
 ```
 
 **Why all-MiniLM-L6-v2?**
-- ⚡ Fast (CPU compatible)
-- 💾 Lightweight (22MB model)
-- 🎯 Excellent semantic understanding for policy text
+- Fast (CPU compatible)
+- Lightweight (22MB model)
+- Excellent semantic understanding for policy text
 
 ### Phase 3: Semantic Search
 
@@ -265,7 +265,7 @@ Config:
 
 ---
 
-## 📡 API Documentation
+## API Documentation
 
 ### Base URL
 
@@ -408,7 +408,7 @@ rag-chatbot-policy/
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ### Test Query 1: Basic Retrieval
 
@@ -446,7 +446,7 @@ Query in Chat 1: "Password policy?"
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
@@ -460,7 +460,7 @@ Query in Chat 1: "Password policy?"
 
 ---
 
-## 🔐 No-Hallucination Strategy
+## No-Hallucination Strategy
 
 **Multi-layered Approach:**
 
@@ -476,7 +476,7 @@ Query in Chat 1: "Password policy?"
 
 ---
 
-## 📊 Performance
+## Performance
 
 | Metric | Value |
 |--------|-------|
@@ -490,7 +490,7 @@ Query in Chat 1: "Password policy?"
 
 ---
 
-## 🛠️ Advanced Configuration
+## Advanced Configuration
 
 ### Enable GPU FAISS
 
@@ -505,18 +505,8 @@ pip install faiss-gpu
 
 ### Add User Authentication
 
-```python
-# In api.py
-from fastapi.security import HTTPBearer
-security = HTTPBearer()
 
-@app.post("/generate")
-async def generate(req: QueryRequest, credentials = Depends(security)):
-    # Verify credentials
-    ...
-```
-
-## 🎓 Learning Resources
+## Learning Resources
 
 - [RAG Concepts](https://docs.llamaindex.ai/en/stable/getting_started/concepts/)
 - [FAISS Documentation](https://github.com/facebookresearch/faiss/wiki)

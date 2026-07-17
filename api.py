@@ -13,6 +13,11 @@ app = FastAPI(title="RAG Policy Chatbot API", version="1.0.0")
 # Allow the website (running on a different local port, e.g. Live Server's
 # 127.0.0.1:5500) to call this API from the browser. "*" is fine for local
 # testing — restrict this to your real domain once deployed.
+origins = [
+    "http://localhost:5500",                  # For local testing
+    "http://127.0.0.1:5500",                 # For local testing
+    "https://talent-bridge-global-rosy.vercel.app"  # Your production Vercel URL
+]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

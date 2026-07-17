@@ -1,18 +1,31 @@
 """
 FAISS Vector Store
-- Embeds chunks (SentenceTransformers)
+- Embeds chunks (Hugging Face Inference API — no local model, saves memory)
 - Vector search (FAISS)
 - Duplicate guard for same source
 """
 import os
 import pickle
+import time
 from typing import Dict, List, Tuple
 import faiss
-from sentence_transformers import SentenceTransformer
+import numpy as np
+import requests
+
 
 class FAISSVectorStore:
-    def __init__(self, model_name: str = "all-MiniLM-L6-v2", index_path: str = "faiss.index"):
-        self.model = SentenceTransformer(model_name)
+    def __init__(
+        self,
+        model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
+        index_path: str = "faiss.index",
+    ):
+        self.hf_token = os.getenv("HF_TOKEN")
+        if not self.hf_token:
+            raise ValueError("HF_TOKEN environment variable is not set")
+
+        self.api_url = f"https://api-inference.huggingface.co/pipeline/feature-extraction/{model_name}"
+        self.headers = {"Authorization": f"Bearer {self.hf_token}"}
+
         self.dimension = 384
         self.index_path = index_path
         self.metadata_path = index_path + ".meta"
@@ -27,18 +40,35 @@ class FAISSVectorStore:
             self.metadata = []
             print("✅ Created new FAISS index")
 
+    def _embed(self, texts: List[str], retries: int = 3) -> np.ndarray:
+        """Call HF Inference API to get embeddings for a list of texts."""
+        for attempt in range(retries):
+            response = requests.post(
+                self.api_url,
+                headers=self.headers,
+                json={"inputs": texts, "options": {"wait_for_model": True}},
+            )
+            if response.status_code == 200:
+                result = response.json()
+                return np.array(result, dtype="float32")
+            elif response.status_code == 503:
+                # Model is loading on HF's side, wait and retry
+                print(f"⏳ Model loading on HF, retrying ({attempt + 1}/{retries})...")
+                time.sleep(5)
+            else:
+                raise RuntimeError(f"HF API error {response.status_code}: {response.text}")
+        raise RuntimeError("HF API failed after retries")
+
     def add_documents(self, chunks: List[str], source: str):
-        # Duplicate guard
         if any(m["source"] == source for m in self.metadata):
             print(f"⚠️ {source} already indexed, skipping")
             return
-
         if not chunks:
             print("⚠️ No chunks to add")
             return
 
         print(f"🔄 Embedding {len(chunks)} chunks from {source} ...")
-        embeddings = self.model.encode(chunks, convert_to_numpy=True).astype("float32")
+        embeddings = self._embed(chunks)
         self.index.add(embeddings)
 
         for i, text in enumerate(chunks):
@@ -50,8 +80,10 @@ class FAISSVectorStore:
     def search(self, query: str, top_k: int = 3) -> List[Tuple[Dict, float]]:
         if self.index.ntotal == 0:
             return []
-        qemb = self.model.encode([query], convert_to_numpy=True).astype("float32")
+
+        qemb = self._embed([query])
         D, I = self.index.search(qemb, min(top_k, self.index.ntotal))
+
         out: List[Tuple[Dict, float]] = []
         for dist, idx in zip(D[0], I[0]):
             if 0 <= idx < len(self.metadata):

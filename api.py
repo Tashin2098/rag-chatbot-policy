@@ -1,4 +1,5 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 from src.ingestion import DocumentIngestor
@@ -8,6 +9,16 @@ from src.generation import AnswerGenerator
 
 
 app = FastAPI(title="RAG Policy Chatbot API", version="1.0.0")
+
+# Allow the website (running on a different local port, e.g. Live Server's
+# 127.0.0.1:5500) to call this API from the browser. "*" is fine for local
+# testing — restrict this to your real domain once deployed.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 vs = FAISSVectorStore()
@@ -57,9 +68,9 @@ async def retrieve(req: QueryRequest):
     """
     if vs.get_stats()["total_chunks"] == 0:
         raise HTTPException(status_code=400, detail="Index is empty.")
-    
+
     chunks, context, citations = retriever.retrieve_with_chunks(req.query, top_k=req.top_k)
-    
+
     return {
         "query": req.query,
         "top_chunks": chunks,  # Full text + metadata for each chunk
@@ -71,15 +82,17 @@ async def retrieve(req: QueryRequest):
 @app.post("/generate")
 async def generate(req: QueryRequest):
     """
-    Generate grounded answer from retrieved context.
+    Generate a conversational answer about Hireline directly from the LLM,
+    with no document retrieval required. The website's chat widget calls
+    this endpoint — it just needs a query in, an answer out, no ingestion
+    step needed first.
     """
-    if vs.get_stats()["total_chunks"] == 0:
-        raise HTTPException(status_code=400, detail="Index is empty.")
     if gen is None:
         raise HTTPException(status_code=500, detail="LLM not initialized.")
-    
-    # Use original retrieve method (no changes needed for UI compatibility)
-    context, citations = retriever.retrieve(req.query, top_k=req.top_k)
-    answer = gen.generate_answer(req.query, context)
-    
-    return {"query": req.query, "answer": answer, "sources": citations}
+
+    # No retrieval — pass an empty context straight to the LLM. The system
+    # prompt in AnswerGenerator already handles empty context gracefully,
+    # answering from its built-in knowledge of Hireline instead of refusing.
+    answer = gen.generate_answer(req.query, context="")
+
+    return {"query": req.query, "answer": answer}
